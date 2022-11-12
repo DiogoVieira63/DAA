@@ -7,6 +7,8 @@ from sklearn import preprocessing
 import numpy as np
 
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
@@ -40,8 +42,8 @@ print(df.nunique(axis=0))
 print(df['luminosity'].value_counts())
 
 # city_name e avg_precipitation só com um valor possível, por isso vamos retirar
-df=df.drop(['city_name', 'avg_precipitation'], axis=1)
-test=test.drop(['city_name', 'avg_precipitation'], axis=1)
+df=df.drop(    ['city_name', 'avg_precipitation','affected_roads'], axis=1)
+test=test.drop(['city_name', 'avg_precipitation','affected_roads'], axis=1)
 
 
 # check for missing values
@@ -56,8 +58,11 @@ def parse_roads(x):
         return 0
     return x.count(',')
 
-df['affected_roads'] = df["affected_roads"].apply(parse_roads)
-test['affected_roads'] = test["affected_roads"].apply(parse_roads)
+#df['affected_roads'] = df["affected_roads"].apply(parse_roads)
+#test['affected_roads'] = test["affected_roads"].apply(parse_roads)
+
+
+
 
 
 
@@ -116,26 +121,29 @@ plt.show()
 df['record_date'] = pd.to_datetime(df['record_date'], format = '%Y-%m-%d %H:%', errors='coerce')
 test['record_date'] = pd.to_datetime(test['record_date'], format = '%Y-%m-%d %H:%', errors='coerce')
 
-df['record_date_year'] = df['record_date'].dt.year
+#df['record_date_year'] = df['record_date'].dt.year
 df['record_date_month'] = df['record_date'].dt.month
 df['record_date_day'] = df['record_date'].dt.day
 df['record_date_hour'] = df['record_date'].dt.hour
-df['record_date_minute'] = df['record_date'].dt.minute
+#df['record_date_minute'] = df['record_date'].dt.minute
 
-
-test['record_date_year'] =  test['record_date'].dt.year
+#test['record_date_year'] =  test['record_date'].dt.year
 test['record_date_month'] = test['record_date'].dt.month
 test['record_date_day'] =   test['record_date'].dt.day
 test['record_date_hour'] =  test['record_date'].dt.hour
-test['record_date_minute'] =test['record_date'].dt.minute
+#test['record_date_minute'] =  test['record_date'].dt.minute
+
 
 df=df.drop(['record_date'], axis=1)
 test=test.drop(['record_date'], axis=1)
-
+1
 #print(df.info())
 
 
+print(df.nunique(axis=0))
 
+print("Duplicated:",df.duplicated().sum())
+#print(df.drop_duplicated)
 
 X = df.drop(['incidents'],axis=1)
 y = df['incidents'].to_frame()
@@ -143,16 +151,25 @@ y = df['incidents'].to_frame()
 X_train,X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=2021)
 
 
-clf = DecisionTreeClassifier(random_state=2022)
+#clf = DecisionTreeClassifier(random_state=2022)
 
-clf.fit(X,y)
+clf = RandomForestClassifier(n_estimators=100)
+
+clf.fit(X,y.values.ravel())
 
 predictions = clf.predict(test)
 
+#clf.fit(X_train,y_train)
+
+scores = cross_val_score(clf,X,y.values.ravel(),cv=10)
+print(scores.mean())
+file = open("tentativa.csv","w+")
+
+file.write("RowId,Incidents\n")
 
 i = 1
 for num in predictions:
-    print(str(i) + "," +predictions[i-1])
+    file.write(str(i) + "," +predictions[i-1] +"\n")
     i+=1
 #conf = confusion_matrix(y,predictions)
 #scores = clf.score(X_test,y_test)
