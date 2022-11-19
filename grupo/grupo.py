@@ -7,9 +7,15 @@ from sklearn import preprocessing
 import numpy as np
 
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
+
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import accuracy_score
+
 
 from sklearn.linear_model import LinearRegression
 
@@ -22,77 +28,57 @@ from sklearn.preprocessing import LabelEncoder
 
 
 
-dfMath = pd.read_csv("Maths.csv")
-
-dfPort = pd.read_csv("Portuguese.csv")
+df = pd.read_csv('music_genre.csv')
 
 
-dfPort['subject']='Portuguese'
-dfMath['subject']='Maths'
+df = df.drop(['instance_id','obtained_date','artist_name','track_name'],axis=1)
+print(df.nunique())
 
 
-df = pd.concat([dfPort, dfMath])
 
-df.to_csv("all.csv",index=False)
+print(df['tempo'].value_counts())
 
-df = pd.read_csv("all.csv")
-print(df.info())
-""""
- 0   school      1044 non-null   object
- 1   sex         1044 non-null   object
- 2   age         1044 non-null   int64 
- 3   address     1044 non-null   object
- 4   famsize     1044 non-null   object
- 5   Pstatus     1044 non-null   object
- 6   Medu        1044 non-null   int64 
- 7   Fedu        1044 non-null   int64 
- 8   Mjob        1044 non-null   object
- 9   Fjob        1044 non-null   object
- 10  reason      1044 non-null   object
- 11  guardian    1044 non-null   object
- 12  traveltime  1044 non-null   int64 
- 13  studytime   1044 non-null   int64 
- 14  failures    1044 non-null   int64 
- 15  schoolsup   1044 non-null   object
- 16  famsup      1044 non-null   object
- 17  paid        1044 non-null   object
- 18  activities  1044 non-null   object
- 19  nursery     1044 non-null   object
- 20  higher      1044 non-null   object
- 21  internet    1044 non-null   object
- 22  romantic    1044 non-null   object
- 23  famrel      1044 non-null   int64 
- 24  freetime    1044 non-null   int64 
- 25  goout       1044 non-null   int64 
- 26  Dalc        1044 non-null   int64 
- 27  Walc        1044 non-null   int64 
- 28  health      1044 non-null   int64 
- 29  absences    1044 non-null   int64 
- 30  G1          1044 non-null   int64 
- 31  G2          1044 non-null   int64 
- 32  G3          1044 non-null   int64 
- 33  subject     1044 non-null   object
-"""
-
-x = df.drop(['G1', 'G2', 'G3'], axis=1)
-y = df['G3'].to_frame()
-
-print(df.nunique(axis=0))
-print(df['Mjob'].value_counts())
 lb_make = LabelEncoder()
 
-#print(df['Fjob'].value_counts())
-#print(df['reason'].value_counts())
-#print(df['guardian'].value_counts())
+df['tempo'] = df['tempo'].apply(lambda x : 0 if x == '?' else float(x))
+df['mode'] = df['mode'].apply(lambda x : 1 if x == 'Major' else 0)
+mean = df['tempo'].mean()
+df['tempo'] = df['tempo'].apply(lambda x : mean if x == 0 else float(x))
+
+#print(df.isna().sum())
+df = df.dropna(axis=0)
+
+df['music_genre'] = lb_make.fit_transform(df['music_genre'])
+df['key'] = lb_make.fit_transform(df['key'])
+
+#df = df.drop(['key','music_genre'],axis=1)
+
+print(df.info())
+
+x = df.drop(['music_genre'], axis=1)
+y = df['music_genre'].to_frame()
 
 
+clf = DecisionTreeRegressor(random_state=2022)
 
-clf = DecisionTreeClassifier(random_state=2022)
-scores = cross_val_score(clf,x,y,cv=10)
+#scores = cross_val_score(clf,x,y,cv=10)
+scores = cross_val_score(clf, x, y, scoring='neg_mean_squared_error', cv=10)
 
-print(scores.mean())
+print( np.sqrt(np.abs(scores.mean())))
+
+X_train,X_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=2021)
+
+clf.fit(X_train,y_train)
 
 
-#print('MAE:', metrics.mean_absolute_error(y_test, predictions))
-#print('MSE:', metrics.mean_squared_error(y_test, predictions))
-#print('RMSE:', np.sqrt(metrics.mean_squared_error(y_test, predictions)))
+#print(scores.mean())
+
+predictions = clf.predict(X_test)
+
+file = open("tentativa.csv","w+")
+
+
+print('MAE:', mean_absolute_error(y_test, predictions))
+print('MSE:', mean_squared_error(y_test, predictions))
+print('RMSE:', np.sqrt(mean_squared_error(y_test, predictions)))
+
