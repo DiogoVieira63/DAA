@@ -49,6 +49,7 @@ corr_matrix = df.corr()
 f, ax = plt.subplots(figsize=(12, 16))
 sns.heatmap(corr_matrix, vmin=-1, vmax=1, square=True, annot=True)
 plt.show()
+
 """"
  0   school      1044 non-null   object
  1   sex         1044 non-null   object
