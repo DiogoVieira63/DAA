@@ -11,6 +11,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LogisticRegression
+from sklearn.cluster import KMeans
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
@@ -18,6 +19,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score
+from matplotlib.ticker import StrMethodFormatter
 
 
 
@@ -108,6 +110,16 @@ def decisionTree(x,y):
     #sns.heatmap(df_cm, annot=True) # font size
     #plt.show()
 
+    fpr, tpr, _ = roc_curve(y_test, predictions)
+
+    plt.clf()
+    plt.plot(fpr, tpr)
+    plt.xlabel('FPR')
+    plt.ylabel('TPR')
+    plt.title('ROC curve')
+    plt.show()
+
+
     #print(scores.mean())
 
 def randomForest(x,y):
@@ -159,11 +171,34 @@ def logisticRegression(x,y):
     #cmd.plot()
     #plt.show()
 
+def kmeans(x,y):
+    clf = KMeans(n_clusters=9, random_state=2022)
+    scores = cross_val_score(clf,x,y.values.ravel(),cv=10)
+    print(scores.mean())
+    print(scores)
+
+    X_train,X_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=2021)
+    clf.fit(X_train,y_train.values.ravel())
+    predictions = clf.predict(X_test)
+    print(accuracy_score(y_test, predictions))
+    
+
 
 #logisticRegression(x,y)
 
-decisionTree(x,y)
+#decisionTree(x,y)
 
-randomForest(x,y)
+#randomForest(x,y)
 
 #vectorMachine(x,y)
+
+#kmeans(x,y)
+
+print(f"Histogram: {df['popularity'].hist()}")
+
+
+#print(df.hist(column='popularity'))
+
+
+
+
