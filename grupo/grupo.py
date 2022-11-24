@@ -23,6 +23,8 @@ from matplotlib.ticker import StrMethodFormatter
 
 
 
+
+
 from sklearn.linear_model import LinearRegression
 
 from sklearn import metrics
@@ -75,7 +77,9 @@ df['duration_ms'] = df['duration_ms'].apply(lambda x : mean if x == -1 else x)
 df['key'] = lb_make.fit_transform(df['key'])
 
 #df = df.drop(['key','music_genre'],axis=1)
-print(df['duration_ms'].value_counts())
+#print(df['duration_ms'].value_counts())
+
+df = df.drop(['energy'], axis=1)
 
 
 
@@ -90,6 +94,12 @@ def correlation(df):
 
 x = df.drop(['music_genre'], axis=1)
 y = df['music_genre'].to_frame()
+
+
+#normalization#
+#x = preprocessing.normalize(x)
+
+#correlation(df)
 
 def decisionTree(x,y):
     clf = DecisionTreeClassifier(random_state=2022)
@@ -110,14 +120,13 @@ def decisionTree(x,y):
     #sns.heatmap(df_cm, annot=True) # font size
     #plt.show()
 
-    fpr, tpr, _ = roc_curve(y_test, predictions)
-
-    plt.clf()
-    plt.plot(fpr, tpr)
-    plt.xlabel('FPR')
-    plt.ylabel('TPR')
-    plt.title('ROC curve')
-    plt.show()
+    #fpr, tpr, _ = roc_curve(y_test, predictions)
+    #plt.clf()
+    #plt.plot(fpr, tpr)
+    #plt.xlabel('FPR')
+    #plt.ylabel('TPR')
+    #plt.title('ROC curve')
+    #plt.show()
 
 
     #print(scores.mean())
@@ -127,7 +136,6 @@ def randomForest(x,y):
 
     scores = cross_val_score(clf,x,y.values.ravel(),cv=5)
     print(scores.mean())
-    print(scores)
 
     X_train,X_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=2021)
     clf.fit(X_train,y_train.values.ravel())
@@ -170,7 +178,7 @@ def logisticRegression(x,y):
     #cmd = ConfusionMatrixDisplay(cm, display_labels=df['music_genre'].unique())
     #cmd.plot()
     #plt.show()
-
+"""
 def kmeans(x,y):
     clf = KMeans(n_clusters=9, random_state=2022)
     scores = cross_val_score(clf,x,y.values.ravel(),cv=10)
@@ -180,22 +188,36 @@ def kmeans(x,y):
     X_train,X_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=2021)
     clf.fit(X_train,y_train.values.ravel())
     predictions = clf.predict(X_test)
-    print(accuracy_score(y_test, predictions))
-    
+    print(accuracy_score(y_test, predictions)) 
+"""
 
-
-#logisticRegression(x,y)
 
 #decisionTree(x,y)
 
-#randomForest(x,y)
+randomForest(x,y)
 
 #vectorMachine(x,y)
 
+#logisticRegression(x,y)
+
 #kmeans(x,y)
 
-print(f"Histogram: {df['popularity'].hist()}")
+#print(f"Histogram: {df['popularity'].hist()}")
 
+
+#df.hist(column= 'music_genre', bins=25, grid=False, figsize=(12,8), color='#86bf91', zorder=2, rwidth=0.9)
+
+#df['music_genre'] = lb_make.fit_transform(df['music_genre'])
+
+
+#sns.distplot(df['music_genre'])
+#sns.show()
+
+plt.hist('popularity', 9, facecolor='blue', alpha=0.5)
+plt.show()
+
+
+plt.show()
 
 #print(df.hist(column='popularity'))
 
