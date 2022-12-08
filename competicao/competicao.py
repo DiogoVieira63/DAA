@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 from sklearn. datasets import make_blobs
 
 from sklearn.cluster import KMeans
+from sklearn.metrics import accuracy_score
 
 
 
@@ -153,24 +154,25 @@ X_train,X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_
 
 #clf = DecisionTreeClassifier(random_state=2022)
 
-clf = RandomForestClassifier(n_estimators=100)
+def randomForest(X,y):
+   clf = RandomForestClassifier(n_estimators=100)
+   clf.fit(X,y.values.ravel())
+   predictions = clf.predict(test)
 
-clf.fit(X,y.values.ravel())
+   #clf.fit(X_train,y_train)
 
-predictions = clf.predict(test)
+   scores = cross_val_score(clf,X,y.values.ravel(),cv=10)
+   print(scores.mean())
+   file = open("tentativa.csv","w+")
 
-#clf.fit(X_train,y_train)
+   file.write("RowId,Incidents\n")
 
-scores = cross_val_score(clf,X,y.values.ravel(),cv=10)
-print(scores.mean())
-file = open("tentativa.csv","w+")
-
-file.write("RowId,Incidents\n")
-
-i = 1
-for num in predictions:
-    file.write(str(i) + "," +predictions[i-1] +"\n")
-    i+=1
+   i = 1
+   for num in predictions:
+      file.write(str(i) + "," +predictions[i-1] +"\n")
+      i+=1
+      
+randomForest(X,y)
 #conf = confusion_matrix(y,predictions)
 #scores = clf.score(X_test,y_test)
 #print("hold-out",scores)
@@ -215,3 +217,20 @@ for i, txt in enumerate(Y):
 plt.show()
 
 """
+
+def kmeans(X,y):
+   clf = KMeans(n_clusters=2,random_state=2022)
+   X_train,X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=2021)
+   clf.fit(X_train,y_train.values.ravel())
+   predictions = clf.predict(X_test)
+   print(accuracy_score(y_test, predictions)) 
+   
+kmeans(X,y)
+
+def vectorMachine(X,y):
+   clf = SVC(random_state=2022)
+   scores = cross_val_score(clf,X,y.values.ravel(),cv=5)
+   print(scores.mean())
+   
+   
+vectorMachine(X,y)

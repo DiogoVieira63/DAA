@@ -22,9 +22,6 @@ from sklearn.metrics import accuracy_score
 from matplotlib.ticker import StrMethodFormatter
 
 
-
-
-
 from sklearn.linear_model import LinearRegression
 
 from sklearn import metrics
