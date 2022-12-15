@@ -25,7 +25,18 @@ from sklearn. datasets import make_blobs
 
 from sklearn.cluster import KMeans
 from sklearn.metrics import accuracy_score
+from xgboost import XGBClassifier
+import xgboost as xgb
 
+from sklearn.compose import make_column_transformer
+from sklearn.pipeline import make_pipeline
+
+#import f_classif
+from sklearn.feature_selection import VarianceThreshold
+from sklearn.feature_selection import SelectKBest
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.impute import SimpleImputer
 
 
 
@@ -43,8 +54,8 @@ print(df.nunique(axis=0))
 print(df['luminosity'].value_counts())
 
 # city_name e avg_precipitation só com um valor possível, por isso vamos retirar
-df=df.drop(    ['city_name', 'avg_precipitation','affected_roads'], axis=1)
-test=test.drop(['city_name', 'avg_precipitation','affected_roads'], axis=1)
+df=df.drop(    ['city_name', 'avg_precipitation'], axis=1)
+test=test.drop(['city_name', 'avg_precipitation'], axis=1)
 
 
 # check for missing values
@@ -59,8 +70,8 @@ def parse_roads(x):
         return 0
     return x.count(',')
 
-#df['affected_roads'] = df["affected_roads"].apply(parse_roads)
-#test['affected_roads'] = test["affected_roads"].apply(parse_roads)
+df['affected_roads'] = df["affected_roads"].apply(parse_roads)
+test['affected_roads'] = test["affected_roads"].apply(parse_roads)
 
 
 
@@ -137,7 +148,6 @@ test['record_date_hour'] =  test['record_date'].dt.hour
 
 df=df.drop(['record_date'], axis=1)
 test=test.drop(['record_date'], axis=1)
-1
 #print(df.info())
 
 
@@ -154,8 +164,11 @@ X_train,X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_
 
 #clf = DecisionTreeClassifier(random_state=2022)
 
+
+
+
 def randomForest(X,y):
-   clf = RandomForestClassifier(n_estimators=100)
+   clf = RandomForestClassifier(n_estimators=300)
    clf.fit(X,y.values.ravel())
    predictions = clf.predict(test)
 
@@ -171,7 +184,31 @@ def randomForest(X,y):
    for num in predictions:
       file.write(str(i) + "," +predictions[i-1] +"\n")
       i+=1
-      
+
+
+numerical_features = [c for c, dtype in zip(X.columns, X.dtypes)
+                     if dtype.kind in ['i','f']]
+
+categorical_features = [c for c, dtype in zip(X.columns, X.dtypes)
+                        if dtype.kind not in ['i','f']]
+
+preprocessor = make_column_transformer(
+   (make_pipeline(
+      SimpleImputer(strategy = 'median'),
+      MinMaxScaler()
+   ),
+   numerical_features),
+   (make_pipeline(
+      SimpleImputer(strategy = 'constant', fill_value = 'missing'),
+      OneHotEncoder(categories = 'auto', handle_unknown = 'ignore')
+   ),categorical_features),
+)
+preprocessor_best = make_pipeline(
+   preprocessor,
+   VarianceThreshold(),
+   SelectKBest(f_classif, k = 50)
+)
+
 randomForest(X,y)
 #conf = confusion_matrix(y,predictions)
 #scores = clf.score(X_test,y_test)
