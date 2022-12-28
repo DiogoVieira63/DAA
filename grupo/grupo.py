@@ -98,6 +98,8 @@ y = df['music_genre'].to_frame()
 
 #correlation(df)
 
+#sns.pairplot(df)
+
 def decisionTree(x,y):
     clf = DecisionTreeClassifier(random_state=2022)
 
@@ -124,8 +126,6 @@ def decisionTree(x,y):
     #plt.ylabel('TPR')
     #plt.title('ROC curve')
     #plt.show()
-
-
     #print(scores.mean())
 
 def randomForest(x,y):
@@ -217,6 +217,17 @@ plt.show()
 plt.show()
 
 #print(df.hist(column='popularity'))
+
+#FAZER
+#incidents_count = df['incidents'].value_counts()
+#sns.set(style="darkgrid")
+#sns.barplot(incidents_count.index, incidents_count.values, alpha=0.9)
+#plt.title('Frequency Distribution of Incidents')
+#plt.ylabel('Number of Occurrences', fontsize = 12)
+#plt.xlabel('Incidents', fontsize=12)
+#plt.show()
+
+
 
 
 

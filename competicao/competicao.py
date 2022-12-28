@@ -51,7 +51,6 @@ test = pd.read_csv("test_data.csv")
 # Check unique values on columns
 print(df.nunique(axis=0))
 
-print(df['luminosity'].value_counts())
 
 # city_name e avg_precipitation só com um valor possível, por isso vamos retirar
 df=df.drop(    ['city_name', 'avg_precipitation'], axis=1)
@@ -63,19 +62,72 @@ test=test.drop(['city_name', 'avg_precipitation'], axis=1)
 
 # Make the values with a ',' NaN
 
-def parse_roads(x):
-    if type(x)!=str:
-        return 0
-    if x==','.strip():
-        return 0
-    return x.count(',')
+roads = {}
 
-df['affected_roads'] = df["affected_roads"].apply(parse_roads)
-test['affected_roads'] = test["affected_roads"].apply(parse_roads)
+def parse_roads(x,letter = ''):
+   if type(x)!=str:
+       return 0
+   if x==','.strip():
+      return 0
+   x = x.replace(' ','')
+   mylist = list(x.split(','))
+   if '' in mylist:
+      mylist.remove('')
+   if letter == '':
+      return len(mylist)
+   res = list(map(lambda x: x.strip().startswith(letter),mylist))
+   res = res.count(True)
+   return 1 if res > 0 else 0
+
+def parse_roads_unique(x):
+   if type(x)!=str:
+       return 0
+   if x==','.strip():
+      return 0
+   x = x.replace(' ','')
+   mylist = x.split(',')
+   if '' in mylist:
+      mylist.remove('')
+   listKeys = list(dict.fromkeys(mylist))
+   return len(listKeys)
 
 
+df  ['affected_roads_N'] =   df["affected_roads"].apply(lambda x :parse_roads(x,'N'))
+test['affected_roads_N'] = test["affected_roads"].apply(lambda x :parse_roads(x,'N'))
 
 
+print(df['affected_roads_N'].value_counts())
+
+df  ['affected_roads_I'] =   df["affected_roads"].apply(lambda x :parse_roads(x,'I'))
+test['affected_roads_I'] = test["affected_roads"].apply(lambda x :parse_roads(x,'I'))
+
+print(df['affected_roads_I'].value_counts())
+
+df  ['affected_roads_R'] =   df["affected_roads"].apply(lambda x :parse_roads(x,'R'))
+test['affected_roads_R'] = test["affected_roads"].apply(lambda x :parse_roads(x,'R'))
+
+print(df['affected_roads_R'].value_counts())
+df  ['affected_roads_E'] =   df["affected_roads"].apply(lambda x :parse_roads(x,'E'))
+test['affected_roads_E'] = test["affected_roads"].apply(lambda x :parse_roads(x,'E'))
+
+print(df['affected_roads_E'].value_counts())
+
+df  ['affected_roads'] =   df["affected_roads"].apply(lambda x : parse_roads(x))
+test['affected_roads'] = test["affected_roads"].apply(lambda x : parse_roads(x))
+
+
+#df  ['affected_roads_'] =   df["affected_roads"].apply(lambda x :parse_roads('N',x))
+#test['affected_roads_'] = test["affected_roads"].apply(lambda x :parse_roads('N',x))
+
+
+#df  ['affected_roads_total'] =   df["affected_roads"].apply(parse_roads)
+#test['affected_roads_total'] = test["affected_roads"].apply(parse_roads)
+#
+#df  ['affected_roads_unique'] =   df["affected_roads"].apply(parse_roads_unique)
+#test['affected_roads_unique'] = test["affected_roads"].apply(parse_roads_unique)
+#
+#df=df.drop(    ['affected_roads'], axis=1)
+#test=test.drop(['affected_roads'], axis=1)
 
 
 def parse_delay(x):
@@ -100,6 +152,7 @@ def parse_rain(x):
        return 2
     else:
         return 3
+
         
 
 df['avg_rain'] = df['avg_rain'].apply(parse_rain)
@@ -122,12 +175,10 @@ test['luminosity'] = test['luminosity'].apply(parse_luminosity)
 
 
 # Check correlations
-"""
 corr_matrix = df.corr() 
 f, ax = plt.subplots(figsize=(12, 16))
 sns.heatmap(corr_matrix, vmin=-1, vmax=1, square=True, annot=True);
 plt.show()
-"""
 
 
 df['record_date'] = pd.to_datetime(df['record_date'], format = '%Y-%m-%d %H:%', errors='coerce')
@@ -156,6 +207,34 @@ print(df.nunique(axis=0))
 print("Duplicated:",df.duplicated().sum())
 #print(df.drop_duplicated)
 
+def parse_incidentes(x):
+   if x == 'None':
+       return 0
+   elif x== 'Low':
+       return 1
+   elif x== 'Medium':
+       return 2
+   elif x== 'High':
+       return 3
+   elif x== 'Very_High':
+       return 4
+
+def parse_incidentes_reverse(x):
+   if x == 0:
+         return 'None'
+   elif x== 1:
+         return 'Low'
+   elif x== 2:
+         return 'Medium'
+   elif x== 3:
+         return 'High'
+   elif x== 4:
+         return 'Very_High'  
+
+#df  ['incidents'] = df  ['incidents'].apply(parse_incidentes)
+#test['incidents'] = test['incidents'].apply(parse_incidentes)
+
+
 X = df.drop(['incidents'],axis=1)
 y = df['incidents'].to_frame()
 
@@ -166,9 +245,8 @@ X_train,X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_
 
 
 
-
 def randomForest(X,y):
-   clf = RandomForestClassifier(n_estimators=300)
+   clf = RandomForestClassifier(n_estimators=500)
    clf.fit(X,y.values.ravel())
    predictions = clf.predict(test)
 
@@ -182,32 +260,33 @@ def randomForest(X,y):
 
    i = 1
    for num in predictions:
+      #file.write(str(i) + "," +parse_incidentes_reverse(num) +"\n")
       file.write(str(i) + "," +predictions[i-1] +"\n")
       i+=1
 
 
-numerical_features = [c for c, dtype in zip(X.columns, X.dtypes)
-                     if dtype.kind in ['i','f']]
-
-categorical_features = [c for c, dtype in zip(X.columns, X.dtypes)
-                        if dtype.kind not in ['i','f']]
-
-preprocessor = make_column_transformer(
-   (make_pipeline(
-      SimpleImputer(strategy = 'median'),
-      MinMaxScaler()
-   ),
-   numerical_features),
-   (make_pipeline(
-      SimpleImputer(strategy = 'constant', fill_value = 'missing'),
-      OneHotEncoder(categories = 'auto', handle_unknown = 'ignore')
-   ),categorical_features),
-)
-preprocessor_best = make_pipeline(
-   preprocessor,
-   VarianceThreshold(),
-   SelectKBest(f_classif, k = 50)
-)
+#numerical_features = [c for c, dtype in zip(X.columns, X.dtypes)
+#                     if dtype.kind in ['i','f']]
+#
+#categorical_features = [c for c, dtype in zip(X.columns, X.dtypes)
+#                        if dtype.kind not in ['i','f']]
+#
+#preprocessor = make_column_transformer(
+#   (make_pipeline(
+#      SimpleImputer(strategy = 'median'),
+#      MinMaxScaler()
+#   ),
+#   numerical_features),
+#   (make_pipeline(
+#      SimpleImputer(strategy = 'constant', fill_value = 'missing'),
+#      OneHotEncoder(categories = 'auto', handle_unknown = 'ignore')
+#   ),categorical_features),
+#)
+#preprocessor_best = make_pipeline(
+#   preprocessor,
+#   VarianceThreshold(),
+#   SelectKBest(f_classif, k = 50)
+#)
 
 randomForest(X,y)
 #conf = confusion_matrix(y,predictions)
@@ -255,6 +334,25 @@ plt.show()
 
 """
 
+
+#sns.distplot(df['avg_temperature'])
+#sns.pairplot(df)
+
+#grafico de barras
+incidents_count = df['incidents'].value_counts()
+sns.set(style="darkgrid")
+sns.barplot(incidents_count.index, incidents_count.values, alpha=0.9)
+plt.title('Frequency Distribution of Incidents')
+plt.ylabel('Number of Occurrences', fontsize = 12)
+plt.xlabel('Incidents', fontsize=12)
+plt.show()
+
+
+
+
+
+
+
 def kmeans(X,y):
    clf = KMeans(n_clusters=2,random_state=2022)
    X_train,X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=2021)
@@ -262,12 +360,11 @@ def kmeans(X,y):
    predictions = clf.predict(X_test)
    print(accuracy_score(y_test, predictions)) 
    
-kmeans(X,y)
+#kmeans(X,y)
 
 def vectorMachine(X,y):
    clf = SVC(random_state=2022)
    scores = cross_val_score(clf,X,y.values.ravel(),cv=5)
-   print(scores.mean())
+   print(scores)
    
-   
-vectorMachine(X,y)
+#vectorMachine(X,y)
