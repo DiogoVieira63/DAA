@@ -58,7 +58,7 @@ test=test.drop(['city_name', 'avg_precipitation'], axis=1)
 
 
 # check for missing values
-#print(df.isna().sum())
+#print(df.isna1().sum())
 
 # Make the values with a ',' NaN
 
@@ -95,7 +95,6 @@ def parse_roads_unique(x):
 df  ['affected_roads_N'] =   df["affected_roads"].apply(lambda x :parse_roads(x,'N'))
 test['affected_roads_N'] = test["affected_roads"].apply(lambda x :parse_roads(x,'N'))
 
-
 print(df['affected_roads_N'].value_counts())
 
 df  ['affected_roads_I'] =   df["affected_roads"].apply(lambda x :parse_roads(x,'I'))
@@ -115,9 +114,8 @@ print(df['affected_roads_E'].value_counts())
 df  ['affected_roads'] =   df["affected_roads"].apply(lambda x : parse_roads(x))
 test['affected_roads'] = test["affected_roads"].apply(lambda x : parse_roads(x))
 
+print(df['affected_roads'].value_counts())
 
-#df  ['affected_roads_'] =   df["affected_roads"].apply(lambda x :parse_roads('N',x))
-#test['affected_roads_'] = test["affected_roads"].apply(lambda x :parse_roads('N',x))
 
 
 #df  ['affected_roads_total'] =   df["affected_roads"].apply(parse_roads)
@@ -231,7 +229,7 @@ def parse_incidentes_reverse(x):
    elif x== 4:
          return 'Very_High'  
 
-#df  ['incidents'] = df  ['incidents'].apply(parse_incidentes)
+df  ['incidents'] = df  ['incidents'].apply(parse_incidentes)
 #test['incidents'] = test['incidents'].apply(parse_incidentes)
 
 
@@ -244,9 +242,8 @@ X_train,X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_
 #clf = DecisionTreeClassifier(random_state=2022)
 
 
-
 def randomForest(X,y):
-   clf = RandomForestClassifier(n_estimators=500)
+   clf = RandomForestClassifier(n_estimators=300)
    clf.fit(X,y.values.ravel())
    predictions = clf.predict(test)
 
@@ -260,8 +257,8 @@ def randomForest(X,y):
 
    i = 1
    for num in predictions:
-      #file.write(str(i) + "," +parse_incidentes_reverse(num) +"\n")
-      file.write(str(i) + "," +predictions[i-1] +"\n")
+      file.write(str(i) + "," +parse_incidentes_reverse(num) +"\n")
+      #file.write(str(i) + "," +predictions[i-1] +"\n")
       i+=1
 
 
@@ -289,7 +286,6 @@ def randomForest(X,y):
 #)
 
 randomForest(X,y)
-#conf = confusion_matrix(y,predictions)
 #scores = clf.score(X_test,y_test)
 #print("hold-out",scores)
 #
@@ -346,10 +342,6 @@ plt.title('Frequency Distribution of Incidents')
 plt.ylabel('Number of Occurrences', fontsize = 12)
 plt.xlabel('Incidents', fontsize=12)
 plt.show()
-
-
-
-
 
 
 

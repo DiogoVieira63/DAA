@@ -15,6 +15,7 @@ from sklearn.cluster import KMeans
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_score
 
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
@@ -30,6 +31,11 @@ from sklearn.svm import SVC
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
+
+from xgboost import XGBClassifier
+import xgboost as xgb
+from sklearn.model_selection import KFold
+
 
 
 
@@ -88,6 +94,8 @@ def correlation(df):
 
 
 
+print(df.info())
+
 
 x = df.drop(['music_genre'], axis=1)
 y = df['music_genre'].to_frame()
@@ -113,6 +121,9 @@ def decisionTree(x,y):
 
     predictions = clf.predict(X_test)
     print(accuracy_score(y_test, predictions))
+
+
+
     #conf = confusion_matrix(y_test, predictions)
     #df_cm = pd.DataFrame(conf, range(9), range(9))
     ## plt.figure(figsize=(10,7))
@@ -129,17 +140,34 @@ def decisionTree(x,y):
     #print(scores.mean())
 
 def randomForest(x,y):
-    clf = RandomForestClassifier(random_state=2022)
+    clf = RandomForestClassifier(random_state=2022, n_estimators=100)
 
     scores = cross_val_score(clf,x,y.values.ravel(),cv=5)
     print(scores.mean())
 
-    X_train,X_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=2021)
+    X_train,X_test, y_train, y_test = train_test_split(x, y, test_size=0.30, random_state=2021)
     clf.fit(X_train,y_train.values.ravel())
 
     predictions = clf.predict(X_test)
     print(accuracy_score(y_test, predictions))
-
+    precision = precision_score(y_test, predictions, average=None)
+    print(precision)
+    sns.set(style="darkgrid")
+    ax = sns.barplot(y=precision, x=y_test['music_genre'].unique())
+    plt.show()
+    conf = confusion_matrix(y_test, predictions)
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.matshow(conf, cmap=plt.cm.Oranges, alpha=0.3)
+    genre = y_test['music_genre'].unique()
+    for i in range(conf.shape[0]):
+        for j in range(conf.shape[1]):
+            ax.text(x=j, y=i,s=conf[i, j], va='center', ha='center', size='xx-large')
+    plt.xlabel('Predictions', fontsize=18)
+    plt.ylabel('Actuals', fontsize=18)
+    plt.xticks(range(len(genre)), genre, rotation=90, fontsize=14)
+    plt.yticks(range(len(genre)), genre, fontsize=14)
+    plt.title('Confusion Matrix', fontsize=18)
+    plt.show()
     #print(scores.mean())
 
 #boxplot = df.boxplot(column=['loudness','tempo','time_signature','key','mode','duration','acousticness','danceability','energy','instrumentalness','liveness','speechiness','valence'])
@@ -175,6 +203,18 @@ def logisticRegression(x,y):
     #cmd = ConfusionMatrixDisplay(cm, display_labels=df['music_genre'].unique())
     #cmd.plot()
     #plt.show()
+
+
+# Y tem de ser inteiros
+def xgboost(x,y):
+    clf = XGBClassifier(random_state = 2022)
+    scores = cross_val_score(clf,x,y.values.ravel(),cv=4)
+    print(scores.mean())
+    #clf.fit(x,y)
+
+
+
+
 """
 def kmeans(x,y):
     clf = KMeans(n_clusters=9, random_state=2022)
@@ -197,6 +237,8 @@ randomForest(x,y)
 
 #logisticRegression(x,y)
 
+#xgboost(x,y)
+
 #kmeans(x,y)
 
 #print(f"Histogram: {df['popularity'].hist()}")
@@ -218,14 +260,14 @@ plt.show()
 
 #print(df.hist(column='popularity'))
 
-#FAZER
-#incidents_count = df['incidents'].value_counts()
-#sns.set(style="darkgrid")
-#sns.barplot(incidents_count.index, incidents_count.values, alpha=0.9)
-#plt.title('Frequency Distribution of Incidents')
-#plt.ylabel('Number of Occurrences', fontsize = 12)
-#plt.xlabel('Incidents', fontsize=12)
-#plt.show()
+
+music_genre_count = df['music_genre'].value_counts()
+sns.set(style="darkgrid")
+sns.barplot(music_genre_count.index, music_genre_count.values, alpha=0.9)
+plt.title('Frequency Distribution of Music Genre')
+plt.ylabel('Number of Occurrences', fontsize = 12)
+plt.xlabel('Music Genre', fontsize=12)
+plt.show()
 
 
 
