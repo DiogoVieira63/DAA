@@ -13,6 +13,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LogisticRegression
 from sklearn.cluster import KMeans
 from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_score
@@ -55,6 +56,23 @@ df['track_name_length'] = df['track_name'].apply(lambda x: len(x))
 df = df.drop(['instance_id','obtained_date','artist_name','track_name'],axis=1)
 
 
+print(df['music_genre'].value_counts())
+
+#Join genre Rap and Hip-Hop
+df['music_genre'] = df['music_genre'].apply(lambda x : 'Rap' if x == 'Hip-Hop' else x)
+df['music_genre'] = df['music_genre'].apply(lambda x : 'Jazz/Blues' if x == 'Jazz' or x== 'Blues' else x)
+
+
+# Drop row if music_genre is Alternative
+df = df[df.music_genre != 'Alternative']
+#df = df[df.music_genre != 'Blues']
+#df = df[df.music_genre != 'Jazz']
+#df = df[df.music_genre != 'Rock']
+#df = df[df.music_genre != 'Alternative']
+
+
+
+
 
 lb_make = LabelEncoder()
 
@@ -66,8 +84,7 @@ mean = df['tempo'].mean()
 df['mode'] = df['mode'].apply(lambda x : 1 if x == 'Major' else 0)
 df['tempo'] = df['tempo'].apply(lambda x : mean if x == 0 else float(x))
 
-#Join genre Rap and Hip-Hop
-df['music_genre'] = df['music_genre'].apply(lambda x : 'Rap' if x == 'Hip-Hop' else x)
+
 
 # handle missing values on duration
 mean = df['duration_ms'].mean()
@@ -139,26 +156,26 @@ def decisionTree(x,y):
     #plt.show()
     #print(scores.mean())
 
+
+
+
 def randomForest(x,y):
     clf = RandomForestClassifier(random_state=2022, n_estimators=100)
 
-    scores = cross_val_score(clf,x,y.values.ravel(),cv=5)
-    print(scores.mean())
+    #scores = cross_val_score(clf,x,y.values.ravel(),cv=5)
+    #print(scores.mean())
 
-    X_train,X_test, y_train, y_test = train_test_split(x, y, test_size=0.30, random_state=2021)
-    clf.fit(X_train,y_train.values.ravel())
-
-    predictions = clf.predict(X_test)
-    print(accuracy_score(y_test, predictions))
-    precision = precision_score(y_test, predictions, average=None)
+    predictions = cross_val_predict(clf,x,y.values.ravel(),cv=5)
+    print(accuracy_score(y, predictions))
+    precision = precision_score(y, predictions, average=None)
     print(precision)
     sns.set(style="darkgrid")
-    ax = sns.barplot(y=precision, x=y_test['music_genre'].unique())
+    ax = sns.barplot(y=precision, x=sorted(y['music_genre'].unique()))
     plt.show()
-    conf = confusion_matrix(y_test, predictions)
+    conf = confusion_matrix(y, predictions)
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.matshow(conf, cmap=plt.cm.Oranges, alpha=0.3)
-    genre = y_test['music_genre'].unique()
+    genre = sorted(y['music_genre'].unique())
     for i in range(conf.shape[0]):
         for j in range(conf.shape[1]):
             ax.text(x=j, y=i,s=conf[i, j], va='center', ha='center', size='xx-large')

@@ -186,12 +186,15 @@ test['record_date'] = pd.to_datetime(test['record_date'], format = '%Y-%m-%d %H:
 df['record_date_month'] = df['record_date'].dt.month
 df['record_date_day'] = df['record_date'].dt.day
 df['record_date_hour'] = df['record_date'].dt.hour
+df['record_date_dayOfWeek'] =  df['record_date'].dt.dayofweek
+
 #df['record_date_minute'] = df['record_date'].dt.minute
 
 #test['record_date_year'] =  test['record_date'].dt.year
 test['record_date_month'] = test['record_date'].dt.month
 test['record_date_day'] =   test['record_date'].dt.day
 test['record_date_hour'] =  test['record_date'].dt.hour
+test['record_date_dayOfWeek'] =  test['record_date'].dt.dayofweek
 #test['record_date_minute'] =  test['record_date'].dt.minute
 
 
