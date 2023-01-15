@@ -118,14 +118,7 @@ print(df['affected_roads'].value_counts())
 
 
 
-#df  ['affected_roads_total'] =   df["affected_roads"].apply(parse_roads)
-#test['affected_roads_total'] = test["affected_roads"].apply(parse_roads)
-#
-#df  ['affected_roads_unique'] =   df["affected_roads"].apply(parse_roads_unique)
-#test['affected_roads_unique'] = test["affected_roads"].apply(parse_roads_unique)
-#
-#df=df.drop(    ['affected_roads'], axis=1)
-#test=test.drop(['affected_roads'], axis=1)
+
 
 
 def parse_delay(x):
@@ -265,77 +258,10 @@ def randomForest(X,y):
       i+=1
 
 
-#numerical_features = [c for c, dtype in zip(X.columns, X.dtypes)
-#                     if dtype.kind in ['i','f']]
-#
-#categorical_features = [c for c, dtype in zip(X.columns, X.dtypes)
-#                        if dtype.kind not in ['i','f']]
-#
-#preprocessor = make_column_transformer(
-#   (make_pipeline(
-#      SimpleImputer(strategy = 'median'),
-#      MinMaxScaler()
-#   ),
-#   numerical_features),
-#   (make_pipeline(
-#      SimpleImputer(strategy = 'constant', fill_value = 'missing'),
-#      OneHotEncoder(categories = 'auto', handle_unknown = 'ignore')
-#   ),categorical_features),
-#)
-#preprocessor_best = make_pipeline(
-#   preprocessor,
-#   VarianceThreshold(),
-#   SelectKBest(f_classif, k = 50)
-#)
 
 randomForest(X,y)
-#scores = clf.score(X_test,y_test)
-#print("hold-out",scores)
-#
-#scores = cross_val_score(clf,X,y,cv=10)
-#
-#print("Cross",scores.mean())
-#
-
-#df1 = df.drop(df.columns[[0, 1]], axis=1)
-
-#print(df1.info())
-# X=df1.values
-# Y=df['Private']
-
-# kmeans = KMeans(n_clusters=2,random_state=2022)
-# kmeans.fit(X)
-
-# Y = Y.apply(lambda x : 1 if x =='No' else 0)
 
 
-# y_pred = kmeans.predict(X)
-# print(confusion_matrix(Y,y_pred))
-# print(classification_report(Y,y_pred))
-
-
-"""
-kmeans = KMeans (n_clusters=2,random_state=2022)
-kmeans.fit(X)
-kmeans.cluster_centers_
-kmeans.labels_
-
-f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(10,6))
-ax1.set_title('k Means')
-ax1.scatter(X[:,0], X[:,1], c=kmeans.labels_, cmap='rainbow')
-ax2.set_title("Original")
-ax2.scatter(X[:,0],X[:,1],c=Y,cmap='rainbow')
-for i, txt in enumerate(Y):
-     if i%5 == 0:
-        plt.annotate(txt, (X[i,0],X[i,1]))
-
-plt.show()
-
-"""
-
-
-#sns.distplot(df['avg_temperature'])
-#sns.pairplot(df)
 
 #grafico de barras
 incidents_count = df['incidents'].value_counts()
