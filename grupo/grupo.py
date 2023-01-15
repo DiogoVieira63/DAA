@@ -21,6 +21,7 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import recall_score
 from matplotlib.ticker import StrMethodFormatter
 
 
@@ -43,7 +44,26 @@ from sklearn.model_selection import KFold
 df = pd.read_csv('music_genre.csv')
 
 
+# Check for missing values
+print(df.isna().sum())
+
 df = df.dropna(axis=0)
+
+
+
+def correlation(df):
+    corr_matrix = df.corr() 
+    f, ax = plt.subplots(figsize=(12, 16))
+    sns.heatmap(corr_matrix, vmin=-1, vmax=1, square=True, annot=True)
+    plt.show()
+
+
+
+correlation(df)
+
+# check for duplicates
+print("Duplicated:" + str(df.duplicated().sum()))
+
 
 # length of track name 
 df['track_name_length'] = df['track_name'].apply(lambda x: len(x))
@@ -62,7 +82,6 @@ print(df['music_genre'].value_counts())
 df['music_genre'] = df['music_genre'].apply(lambda x : 'Rap' if x == 'Hip-Hop' else x)
 df['music_genre'] = df['music_genre'].apply(lambda x : 'Jazz/Blues' if x == 'Jazz' or x== 'Blues' else x)
 
-
 # Drop row if music_genre is Alternative
 df = df[df.music_genre != 'Alternative']
 #df = df[df.music_genre != 'Blues']
@@ -79,10 +98,10 @@ lb_make = LabelEncoder()
 # handle missing values on tempo
 df['tempo'] = df['tempo'].apply(lambda x : 0 if x == '?' else float(x))
 mean = df['tempo'].mean()
+df['tempo'] = df['tempo'].apply(lambda x : mean if x == 0 else float(x))
 
 #Label encoding mode
 df['mode'] = df['mode'].apply(lambda x : 1 if x == 'Major' else 0)
-df['tempo'] = df['tempo'].apply(lambda x : mean if x == 0 else float(x))
 
 
 
@@ -103,14 +122,6 @@ df = df.drop(['energy'], axis=1)
 
 
 
-def correlation(df):
-    corr_matrix = df.corr() 
-    f, ax = plt.subplots(figsize=(12, 16))
-    sns.heatmap(corr_matrix, vmin=-1, vmax=1, square=True, annot=True)
-    plt.show()
-
-
-
 print(df.info())
 
 
@@ -121,7 +132,7 @@ y = df['music_genre'].to_frame()
 #normalization#
 #x = preprocessing.normalize(x)
 
-#correlation(df)
+correlation(df)
 
 #sns.pairplot(df)
 
@@ -167,6 +178,7 @@ def randomForest(x,y):
 
     predictions = cross_val_predict(clf,x,y.values.ravel(),cv=5)
     print(accuracy_score(y, predictions))
+    #precision = recall_score(y, predictions, average=None)
     precision = precision_score(y, predictions, average=None)
     print(precision)
     sns.set(style="darkgrid")
